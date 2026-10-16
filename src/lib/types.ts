@@ -1,0 +1,216 @@
+// ─────────────────────────────────────────────────────────────
+// DTO contracts shared between API routes and client screens
+// ─────────────────────────────────────────────────────────────
+
+export type Lang = "fa" | "en";
+export type ThemeMode = "light" | "dark" | "system";
+export type CalType = "jalali" | "gregorian";
+export type CurrencyCode = "IRT" | "IRR" | "USD";
+export type TxType = "INCOME" | "EXPENSE" | "TRANSFER";
+export type AccountType = "BANK" | "CASH" | "SAVINGS" | "CUSTOM";
+export type CategoryType = "INCOME" | "EXPENSE";
+export type DebtType = "OWED_TO_ME" | "I_OWE";
+export type DebtStatus = "PAID" | "PENDING" | "OVERDUE";
+export type Frequency = "DAILY" | "WEEKLY" | "MONTHLY" | "YEARLY";
+export type ReminderType = "BILL" | "INSTALLMENT" | "DEBT" | "SAVINGS" | "CUSTOM";
+export type ReportPeriod = "daily" | "weekly" | "monthly" | "yearly";
+
+export interface ProfileDTO {
+  id: string;
+  name: string;
+  email: string;
+  avatar: string | null;
+  language: Lang;
+  theme: ThemeMode;
+  calendar: CalType;
+  currency: CurrencyCode;
+  weekStart: "sat" | "mon";
+  appLock: boolean;
+  pin: string | null;
+  notificationsEnabled: boolean;
+  onboarded: boolean;
+  createdAt: string;
+}
+
+export interface AccountDTO {
+  id: string;
+  name: string;
+  type: AccountType;
+  color: string;
+  icon: string;
+  initialBalance: number;
+  balance: number;
+  isDefault: boolean;
+}
+
+export interface CategoryDTO {
+  id: string;
+  name: string;
+  type: CategoryType;
+  icon: string;
+  color: string;
+  isDefault: boolean;
+  spent?: number;
+  count?: number;
+}
+
+export interface TransactionDTO {
+  id: string;
+  type: TxType;
+  amount: number;
+  title: string | null;
+  description: string | null;
+  notes: string | null;
+  receiptUrl: string | null;
+  accountId: string;
+  accountName: string;
+  toAccountId: string | null;
+  toAccountName: string | null;
+  categoryId: string | null;
+  categoryName: string | null;
+  categoryColor: string | null;
+  categoryIcon: string | null;
+  date: string;
+  createdAt: string;
+}
+
+export interface BudgetItemDTO {
+  id: string;
+  month: string;
+  categoryId: string | null;
+  categoryName: string | null;
+  categoryIcon: string | null;
+  categoryColor: string | null;
+  amount: number;
+  spent: number;
+  percent: number;
+}
+
+export interface BudgetsDTO {
+  month: string;
+  total: number;
+  overallSpent: number;
+  items: BudgetItemDTO[];
+}
+
+export interface DebtPaymentDTO {
+  id: string;
+  amount: number;
+  date: string;
+  notes: string | null;
+}
+
+export interface DebtDTO {
+  id: string;
+  person: string;
+  type: DebtType;
+  amount: number;
+  paidAmount: number;
+  remaining: number;
+  date: string;
+  dueDate: string | null;
+  notes: string | null;
+  status: DebtStatus;
+  settledAt: string | null;
+  payments: DebtPaymentDTO[];
+}
+
+export interface RecurringDTO {
+  id: string;
+  title: string;
+  type: "INCOME" | "EXPENSE";
+  amount: number;
+  accountId: string;
+  accountName: string;
+  categoryId: string | null;
+  categoryName: string | null;
+  categoryIcon: string | null;
+  categoryColor: string | null;
+  frequency: Frequency;
+  startDate: string;
+  endDate: string | null;
+  totalCount: number | null;
+  paidCount: number;
+  lastPaidAt: string | null;
+  isActive: boolean;
+  nextDue: string | null;
+}
+
+export interface SavingsDepositDTO {
+  id: string;
+  amount: number;
+  date: string;
+  notes: string | null;
+}
+
+export interface SavingsGoalDTO {
+  id: string;
+  name: string;
+  targetAmount: number;
+  targetDate: string | null;
+  color: string;
+  icon: string;
+  current: number;
+  percent: number;
+  deposits: SavingsDepositDTO[];
+}
+
+export interface ReminderDTO {
+  id: string;
+  title: string;
+  type: ReminderType;
+  date: string;
+  time: string | null;
+  repeat: string;
+  isDone: boolean;
+  daysLeft: number;
+}
+
+export interface UpcomingDTO {
+  id: string;
+  title: string;
+  amount: number | null;
+  date: string;
+  kind: "RECURRING" | "DEBT" | "REMINDER";
+  daysLeft: number;
+}
+
+export interface DashboardDTO {
+  totalBalance: number;
+  todayIncome: number;
+  todayExpense: number;
+  monthIncome: number;
+  monthExpense: number;
+  monthNet: number;
+  budget: { total: number; spent: number; percent: number } | null;
+  week: { date: string; income: number; expense: number }[];
+  recent: TransactionDTO[];
+  upcoming: UpcomingDTO[];
+  debts: { owedToMe: number; iOwe: number };
+  goals: { id: string; name: string; percent: number; current: number; target: number; color: string }[];
+}
+
+export interface ReportCategoryDTO {
+  categoryId: string;
+  name: string;
+  color: string;
+  total: number;
+  percent: number;
+}
+
+export interface ReportsDTO {
+  period: ReportPeriod;
+  from: string;
+  to: string;
+  income: number;
+  expense: number;
+  net: number;
+  series: { label: string; income: number; expense: number }[];
+  categories: ReportCategoryDTO[];
+  incomeCategories: ReportCategoryDTO[];
+  accounts: { accountId: string; name: string; color: string; income: number; expense: number }[];
+}
+
+export interface ScreenParams {
+  [key: string]: unknown;
+}

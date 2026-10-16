@@ -1,0 +1,159 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Profile {
+  id                   String   @id @default("main")
+  name                 String   @default("کاربر")
+  email                String   @default("")
+  avatar               String?
+  language             String   @default("fa") // fa | en
+  theme                String   @default("light") // light | dark | system
+  calendar             String   @default("jalali") // jalali | gregorian
+  currency             String   @default("IRT") // IRT | IRR | USD
+  weekStart            String   @default("sat") // sat | mon
+  appLock              Boolean  @default(false)
+  pin                  String?
+  notificationsEnabled Boolean  @default(true)
+  onboarded            Boolean  @default(false)
+  createdAt            DateTime @default(now())
+}
+
+model Account {
+  id                String        @id @default(cuid())
+  name              String
+  type              String        @default("BANK") // BANK | CASH | SAVINGS | CUSTOM
+  color             String        @default("#4E9B72")
+  icon              String        @default("landmark")
+  initialBalance    Float         @default(0)
+  isDefault         Boolean       @default(false)
+  createdAt         DateTime      @default(now())
+  transactions      Transaction[] @relation("account")
+  incomingTransfers Transaction[] @relation("toAccount")
+  recurring         Recurring[]
+}
+
+model Category {
+  id           String        @id @default(cuid())
+  name         String
+  type         String // INCOME | EXPENSE
+  icon         String        @default("tag")
+  color        String        @default("#4E9B72")
+  isDefault    Boolean       @default(false)
+  createdAt    DateTime      @default(now())
+  transactions Transaction[]
+  budgets      Budget[]
+  recurring    Recurring[]
+}
+
+model Transaction {
+  id          String    @id @default(cuid())
+  type        String // INCOME | EXPENSE | TRANSFER
+  amount      Float
+  title       String?
+  description String?
+  notes       String?
+  receiptUrl  String?
+  accountId   String
+  account     Account   @relation("account", fields: [accountId], references: [id], onDelete: Cascade)
+  toAccountId String?
+  toAccount   Account?  @relation("toAccount", fields: [toAccountId], references: [id], onDelete: SetNull)
+  categoryId  String?
+  category    Category? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  debtId      String?
+  recurringId String?
+  date        DateTime
+  createdAt   DateTime  @default(now())
+
+  @@index([date])
+  @@index([type])
+}
+
+model Budget {
+  id         String    @id @default(cuid())
+  month      String // "1403-07" jalali month key
+  amount     Float
+  categoryId String?
+  category   Category? @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  createdAt  DateTime  @default(now())
+
+  @@unique([month, categoryId])
+}
+
+model Debt {
+  id         String        @id @default(cuid())
+  person     String
+  type       String // OWED_TO_ME | I_OWE
+  amount     Float
+  paidAmount Float         @default(0)
+  date       DateTime      @default(now())
+  dueDate    DateTime?
+  notes      String?
+  settledAt  DateTime?
+  createdAt  DateTime      @default(now())
+  payments   DebtPayment[]
+}
+
+model DebtPayment {
+  id     String   @id @default(cuid())
+  debtId String
+  debt   Debt     @relation(fields: [debtId], references: [id], onDelete: Cascade)
+  amount Float
+  date   DateTime @default(now())
+  notes  String?
+}
+
+model Recurring {
+  id         String        @id @default(cuid())
+  title      String
+  type       String        @default("EXPENSE") // EXPENSE | INCOME
+  amount     Float
+  accountId  String
+  account    Account       @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  categoryId String?
+  category   Category?     @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  frequency  String        @default("MONTHLY") // DAILY | WEEKLY | MONTHLY | YEARLY
+  startDate  DateTime
+  endDate    DateTime?
+  totalCount Int?
+  paidCount  Int           @default(0)
+  lastPaidAt DateTime?
+  isActive   Boolean       @default(true)
+  createdAt  DateTime      @default(now())
+}
+
+model SavingsGoal {
+  id           String           @id @default(cuid())
+  name         String
+  targetAmount Float
+  targetDate   DateTime?
+  color        String           @default("#4E9B72")
+  icon         String           @default("target")
+  createdAt    DateTime         @default(now())
+  deposits     SavingsDeposit[]
+}
+
+model SavingsDeposit {
+  id     String      @id @default(cuid())
+  goalId String
+  goal   SavingsGoal @relation(fields: [goalId], references: [id], onDelete: Cascade)
+  amount Float // + deposit, - withdraw
+  date   DateTime    @default(now())
+  notes  String?
+}
+
+model Reminder {
+  id        String   @id @default(cuid())
+  title     String
+  type      String   @default("CUSTOM") // BILL | INSTALLMENT | DEBT | SAVINGS | CUSTOM
+  date      DateTime
+  time      String?
+  repeat    String   @default("NONE") // NONE | DAILY | WEEKLY | MONTHLY
+  isDone    Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
