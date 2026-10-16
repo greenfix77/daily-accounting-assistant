@@ -32,6 +32,7 @@ export async function PATCH(req: NextRequest) {
       weekStart?: string
       pin?: string | null
       appLock?: boolean
+      biometricLock?: boolean
       notificationsEnabled?: boolean
       onboarded?: boolean
     } = {}
@@ -46,6 +47,7 @@ export async function PATCH(req: NextRequest) {
     if (body.weekStart !== undefined) data.weekStart = String(body.weekStart)
     if (body.pin !== undefined) data.pin = body.pin === null ? null : String(body.pin)
     if (body.appLock !== undefined) data.appLock = Boolean(body.appLock)
+    if (body.biometricLock !== undefined) data.biometricLock = Boolean(body.biometricLock)
     if (body.notificationsEnabled !== undefined) data.notificationsEnabled = Boolean(body.notificationsEnabled)
     if (body.onboarded !== undefined) data.onboarded = Boolean(body.onboarded)
 

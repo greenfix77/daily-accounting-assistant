@@ -27,6 +27,7 @@ export interface ProfileDTO {
   weekStart: "sat" | "mon";
   appLock: boolean;
   pin: string | null;
+  biometricLock: boolean;
   notificationsEnabled: boolean;
   onboarded: boolean;
   createdAt: string;

@@ -19,6 +19,7 @@ model Profile {
   weekStart            String   @default("sat") // sat | mon
   appLock              Boolean  @default(false)
   pin                  String?
+  biometricLock        Boolean  @default(false)
   notificationsEnabled Boolean  @default(true)
   onboarded            Boolean  @default(false)
   createdAt            DateTime @default(now())

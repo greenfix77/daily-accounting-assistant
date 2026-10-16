@@ -7,6 +7,7 @@ import {
   Coins,
   CalendarDays,
   Lock,
+  Fingerprint,
   Bell,
   BellRing,
   FileDown,
@@ -19,6 +20,12 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { toEnDigits } from "@/lib/jalali";
+import {
+  biometricSupported,
+  biometricRegistered,
+  biometricRegister,
+  biometricRemove,
+} from "@/lib/biometric";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Switch } from "@/components/ui/switch";
 import { cn } from "@/lib/utils";
@@ -149,6 +156,13 @@ export default function SettingsScreen({ params }: { params?: Record<string, unk
   const [pin, setPin] = React.useState("");
   const [pin2, setPin2] = React.useState("");
   const [logoutOpen, setLogoutOpen] = React.useState(false);
+  const [bioSupported, setBioSupported] = React.useState<boolean | null>(null);
+  const [bioRegistered, setBioRegistered] = React.useState(false);
+
+  React.useEffect(() => {
+    setBioSupported(biometricSupported());
+    setBioRegistered(biometricRegistered());
+  }, [settings?.biometricLock]);
 
   const themeLabel = (t: ThemeMode) =>
     t === "light" ? f.t("set.themeLight") : t === "dark" ? f.t("set.themeDark") : f.t("set.themeSystem");
@@ -164,7 +178,32 @@ export default function SettingsScreen({ params }: { params?: Record<string, unk
         setPinOpen(true);
       }
     } else {
-      updateSettings.mutate({ appLock: false, pin: null });
+      biometricRemove();
+      updateSettings.mutate({ appLock: false, pin: null, biometricLock: false });
+    }
+  };
+
+  const onBiometricChange = async (v: boolean) => {
+    if (v) {
+      if (!settings?.appLock) {
+        toast.error(f.t("set.biometricNeedLock"));
+        return;
+      }
+      try {
+        const ok = await biometricRegister();
+        if (ok) {
+          await updateSettings.mutateAsync({ biometricLock: true });
+          toast.success(f.t("set.biometricOn"));
+        } else {
+          toast.error(f.t("set.biometricFailed"));
+        }
+      } catch {
+        toast.error(f.t("set.biometricFailed"));
+      }
+    } else {
+      biometricRemove();
+      updateSettings.mutate({ biometricLock: false });
+      toast.success(f.t("set.biometricOff"));
     }
   };
 
@@ -183,7 +222,8 @@ export default function SettingsScreen({ params }: { params?: Record<string, unk
   };
 
   const doLogout = async () => {
-    await updateSettings.mutateAsync({ onboarded: false, appLock: false, pin: null });
+    biometricRemove();
+    await updateSettings.mutateAsync({ onboarded: false, appLock: false, pin: null, biometricLock: false });
     setAuthed(false);
     popToRoot();
     toast.success(f.t("auth.logoutSuccess"));
@@ -232,6 +272,24 @@ export default function SettingsScreen({ params }: { params?: Record<string, unk
               <Switch
                 checked={!!settings?.appLock}
                 onCheckedChange={onAppLockChange}
+              />
+            }
+          />
+          <Row
+            icon={Fingerprint}
+            title={f.t("set.biometric")}
+            sub={
+              bioSupported === false
+                ? f.t("set.biometricUnsupported")
+                : !settings?.appLock
+                  ? f.t("set.biometricNeedLock")
+                  : f.t("set.biometricDesc")
+            }
+            end={
+              <Switch
+                checked={!!settings?.biometricLock && bioRegistered}
+                disabled={bioSupported === false || !settings?.appLock}
+                onCheckedChange={onBiometricChange}
               />
             }
           />

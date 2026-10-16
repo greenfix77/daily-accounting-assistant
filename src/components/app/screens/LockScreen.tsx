@@ -1,11 +1,12 @@
 "use client";
 
 import * as React from "react";
-import { Delete, Lock } from "lucide-react";
+import { Delete, Lock, Fingerprint } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useSettings } from "@/lib/hooks";
 import { makeT } from "@/lib/i18n";
 import { toFaDigits, toEnDigits } from "@/lib/jalali";
+import { biometricRegistered, biometricAuthenticate } from "@/lib/biometric";
 
 export default function LockScreen({
   onUnlock,
@@ -19,13 +20,61 @@ export default function LockScreen({
   const t = React.useMemo(() => makeT(lang), [lang]);
   const [pin, setPin] = React.useState("");
   const [error, setError] = React.useState(false);
+  const [bioError, setBioError] = React.useState(false);
+  const [bioReady, setBioReady] = React.useState(false);
+
+  const onUnlockRef = React.useRef(onUnlock);
+  React.useEffect(() => {
+    onUnlockRef.current = onUnlock;
+  }, [onUnlock]);
+
+  const unlockNow = React.useCallback(() => {
+    sessionStorage.setItem("app-unlocked", "1");
+    onUnlockRef.current?.();
+  }, []);
+
+  const unlockBio = React.useCallback(async () => {
+    try {
+      const ok = await biometricAuthenticate();
+      if (ok) {
+        unlockNow();
+      } else {
+        setBioError(true);
+        setTimeout(() => setBioError(false), 2400);
+      }
+    } catch {
+      setBioError(true);
+      setTimeout(() => setBioError(false), 2400);
+    }
+  }, [unlockNow]);
+
+  // biometric availability follows the settings flag + local credential
+  React.useEffect(() => {
+    setBioReady(!!(settings?.biometricLock && biometricRegistered()));
+  }, [settings?.biometricLock]);
+
+  // auto-prompt the biometric sensor once when the lock appears
+  React.useEffect(() => {
+    if (!visible || !bioReady) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const ok = await biometricAuthenticate();
+        if (!cancelled && ok) unlockNow();
+      } catch {
+        /* user dismissed the prompt — the keypad & button remain */
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [visible, bioReady, unlockNow]);
 
   if (!visible) return null;
 
   const submit = (code: string) => {
     if (code === (settings?.pin ?? "")) {
-      sessionStorage.setItem("app-unlocked", "1");
-      onUnlock?.();
+      unlockNow();
     } else {
       setError(true);
       setTimeout(() => {
@@ -88,6 +137,21 @@ export default function LockScreen({
           <Delete className="w-5 h-5" />
         </button>
       </div>
+      {bioReady && (
+        <div className="flex flex-col items-center gap-1.5">
+          <button
+            onClick={unlockBio}
+            aria-label="fingerprint unlock"
+            className="w-14 h-14 rounded-full bg-card card-soft flex items-center justify-center text-primary border border-primary/30 hover:bg-secondary active:scale-95 transition-all"
+          >
+            <Fingerprint className="w-7 h-7" />
+          </button>
+          <span className="text-[12px] text-muted-foreground">{t("lock.fingerprint")}</span>
+          {bioError && (
+            <span className="text-[12px] font-semibold text-expense">{t("lock.biometricFailed")}</span>
+          )}
+        </div>
+      )}
     </div>
   );
 }
