@@ -1,5 +1,5 @@
 /**
- * Factory reset for «دستیار حسابیاری روزانه»
+ * Factory reset for «حساب یار ری را»
  * Run: bun run db:seed
  *
  * ⚠️ This app ships with an EMPTY database by design:

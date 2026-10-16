@@ -3,10 +3,10 @@ import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
 
 export const metadata: Metadata = {
-  title: "دستیار حسابیاری روزانه",
+  title: "حساب یار ری را",
   description:
     "مدیریت هوشمند روزانه درآمد و هزینه — حساب‌ها، بودجه، بدهی‌ها، اقساط و اهداف پس‌انداز",
-  applicationName: "دستیار حسابیاری روزانه",
+  applicationName: "حساب یار ری را",
 };
 
 export const viewport: Viewport = {

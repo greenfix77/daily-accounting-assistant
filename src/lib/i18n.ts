@@ -5,7 +5,7 @@ export type Dict = Record<string, string>;
 
 export const fa: Dict = {
   // ── App ──
-  "app.name": "دستیار حسابیاری روزانه",
+  "app.name": "حساب یار ری را",
   "app.tagline": "مدیریت هوشمند روزانه درآمد و هزینه",
   "app.version": "نسخه ۱.۰.۰",
   "common.save": "ثبت",
@@ -399,8 +399,8 @@ export const fa: Dict = {
   "set.profileRowDesc": "اطلاعات حساب کاربری",
   "set.about": "درباره برنامه",
   "set.aboutDesc": "نسخه و اطلاعات",
-  "set.aboutTitle": "درباره دستیار حسابیاری",
-  "set.aboutText": "دستیار حسابیاری روزانه، همراه شما برای مدیریت هوشمند امور مالی شخصی. درآمد، هزینه، بودجه، بدهی، اقساط و اهداف پس‌انداز را در یک‌جا مدیریت کنید.",
+  "set.aboutTitle": "درباره حساب یار ری را",
+  "set.aboutText": "حساب یار ری را، همراه شما برای مدیریت هوشمند امور مالی شخصی. درآمد، هزینه، بودجه، بدهی، اقساط و اهداف پس‌انداز را در یک‌جا مدیریت کنید.",
   "set.features": "ویژگی‌ها",
   "set.secure": "داده‌ها فقط روی دستگاه شما ذخیره می‌شوند",
   "set.saved": "تنظیمات ذخیره شد",
@@ -445,7 +445,7 @@ export const fa: Dict = {
 };
 
 export const en: Dict = {
-  "app.name": "Daily Accounting Assistant",
+  "app.name": "HesabYar ReyRa",
   "app.tagline": "Smart daily income & expense management",
   "app.version": "Version 1.0.0",
   "common.save": "Save",
@@ -824,8 +824,8 @@ export const en: Dict = {
   "set.profileRowDesc": "Account information",
   "set.about": "About the app",
   "set.aboutDesc": "Version and info",
-  "set.aboutTitle": "About Accounting Assistant",
-  "set.aboutText": "Daily Accounting Assistant is your companion for smart personal finance. Manage income, expenses, budgets, debts, installments and savings goals in one place.",
+  "set.aboutTitle": "About HesabYar ReyRa",
+  "set.aboutText": "HesabYar ReyRa is your companion for smart personal finance. Manage income, expenses, budgets, debts, installments and savings goals in one place.",
   "set.features": "Features",
   "set.secure": "Your data stays on your device",
   "set.saved": "Settings saved",
