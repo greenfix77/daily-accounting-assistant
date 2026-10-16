@@ -46,24 +46,43 @@ bun run dev
 > 🔒 اپ با **دیتابیس خالی** عرضه می‌شود؛ تمام اطلاعات (پروفایل، حساب‌ها، تراکنش‌ها و…) توسط خود کاربر وارد می‌شود.
 > بازگشت به حالت کارخانه: `bun run db:seed`
 
-## ☁️ دیپلوی روی Railway
+## ☁️ دیپلوی آنلاین
 
-اپلیکیشن یک `Dockerfile` آماده دارد و روی [Railway](https://railway.app) مستقیم اجرا می‌شود:
+اپ دو حالت دیتابیس دارد و بسته به میزبان، خودکار بین آن‌ها سوییچ می‌کند:
+- **فایل محلی SQLite** — حالت پیش‌فرض (اجرای محلی، Docker/Railway)
+- **Turso/libSQL از راه دور** — وقتی `TURSO_DATABASE_URL` و `TURSO_AUTH_TOKEN` تنظیم شده باشند (میزبان‌های Serverless مثل Vercel)
 
-1. در Railway یک پروژه جدید بسازید: **New Project → Deploy from GitHub repo** و ریپو را انتخاب کنید (بیلدر Docker به‌صورت خودکار تشخیص داده می‌شود).
-2. در تب **Variables** متغیر زیر را اضافه کنید:
-   ```
-   DATABASE_URL=file:/data/hesabyar.db
-   ```
-3. برای ماندگاری داده‌ها یک Volume اضافه کنید: **Service → Volumes → New Volume** با مسیر اتصال (Mount Path):
-   ```
-   /data
-   ```
-4. از تب **Settings → Networking** یک دامنه بسازید (**Generate Domain**) — HTTPS خودکار فعال می‌شود.
+### گزینه ۱: Vercel + Turso (رایگان) ⭐ پیشنهادی
 
-> 🗄 ساخت جداول در اولین اجرا به‌صورت خودکار انجام می‌شود (`prisma db push` در استارت کانتینر).
-> 🔐 چون Railway دامنه HTTPS می‌دهد، **ورود با اثر انگشت (WebAuthn)** روی گوشی واقعی هم کار می‌کند.
+1. در [turso.tech](https://turso.tech) با GitHub ثبت‌نام کنید → **Create Database** (منطقه نزدیک، مثلاً `fra`) → از صفحه دیتابیس، **Database URL** و یک **Token** بسازید و کپی کنید.
+2. در [vercel.com](https://vercel.com) با GitHub وارد شوید → **Add New → Project** → ریپو `daily-accounting-assistant` را Import کنید.
+3. قبل از Deploy، در بخش **Environment Variables** دو متغیر را اضافه کنید:
+   ```
+   TURSO_DATABASE_URL = libsql://<your-db>.turso.io
+   TURSO_AUTH_TOKEN   = <your-token>
+   ```
+4. **Deploy** را بزنید (Region پیشنهادی: Frankfurt).
+5. بعد از اتمام دیپلوی، **یک‌بار** آدرس زیر را در مرورگر باز کنید تا جداول دیتابیس ساخته شوند:
+   ```
+   https://<your-app>.vercel.app/api/setup
+   ```
+   پاسخ مورد انتظار: `{"ok":true,"status":"initialized"}`
+6. اپ را باز کنید و ثبت‌نام کنید — تمام! 🎉
+
+> 🔐 HTTPS خودکار Vercel → **ورود با اثر انگشت** روی گوشی واقعی کار می‌کند.
+> 🆓 پلن رایگان Turso (۹GB + یک میلیارد خواندن در ماه) و Vercel Hobby برای یک کاربر شخصی کاملاً کافی است.
 > 💾 پشتیبان‌گیری: خروجی JSON از بخش «خروجی و پشتیبان‌گیری» داخل خود اپ.
+
+### گزینه ۲: Railway (پلن پولی — $5/ماه)
+
+`Dockerfile` و `railway.toml` آماده‌اند:
+
+1. **New Project → Deploy from GitHub repo** (بیلدر Docker خودکار تشخیص داده می‌شود)
+2. Variables → `DATABASE_URL=file:/data/hesabyar.db`
+3. Volumes → Volume جدید با مسیر `/data`
+4. Settings → Networking → **Generate Domain**
+
+> ⚠️ برخی حساب‌های جدید Railway با پیام «unusual activity» محدود می‌شوند؛ طبق سیاست خودشان فقط **ارتقا به پلن پولی** این محدودیت را برمی‌دارد (پرداخت به‌تنهایی کافی نیست). در ساخت جداول، اولین استارت کانتینر خودکار `prisma db push` را اجرا می‌کند.
 > 🏷 Healthcheck: مسیر `/api/health`
 
 ## 🗺 نقشه راه
